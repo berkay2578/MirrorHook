@@ -34,7 +34,7 @@ void MyAwesomeInitFunction() {
       MirrorHook::D3D9::AddD3D9Extender(MirrorHook::D3D9::D3D9Extender::EndScene, &MySuperEndSceneExtension);
 }
 ```
-Moreover, the actual DirectX libraries are **not needed* to write extensions (as long as you don't actually need them).
+Moreover, the actual DirectX libraries are **not needed** to write extensions (as long as you don't actually need them).
 ```
 // Example:
 // Instead of ->
