@@ -1,39 +1,49 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    <Filter Include="default">
+      <UniqueIdentifier>{6fd2b156-9719-4314-9084-d02d78643eaa}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    <Filter Include="Helpers">
+      <UniqueIdentifier>{97573e01-9f0c-4750-8c7d-3863ef3242eb}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="Helpers\External">
+      <UniqueIdentifier>{5e37479c-8113-4967-8d46-c52bc7666aa8}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="ReadMe.txt" />
+    <Filter Include="Helpers\Internal">
+      <UniqueIdentifier>{0b14e1dc-34f7-40bb-8940-5eb6b5234e14}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Helpers\Internal\D3D9">
+      <UniqueIdentifier>{eba6b47c-4180-49d6-aa16-eff8406c39de}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
-      <Filter>Header Files</Filter>
+      <Filter>default</Filter>
     </ClInclude>
     <ClInclude Include="targetver.h">
-      <Filter>Header Files</Filter>
+      <Filter>default</Filter>
+    </ClInclude>
+    <ClInclude Include="D3D9Types.h">
+      <Filter>Helpers\Internal\D3D9</Filter>
+    </ClInclude>
+    <ClInclude Include="VTableHook.hpp">
+      <Filter>Helpers\Internal\D3D9</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory.h">
+      <Filter>Helpers\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="Definitions.hpp">
+      <Filter>Helpers\External</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>default</Filter>
     </ClCompile>
-    <ClCompile Include="MirrorHook.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="dllmain.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="Memory.cpp">
+      <Filter>Helpers\Internal</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
