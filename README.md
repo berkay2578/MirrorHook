@@ -2,10 +2,10 @@
 A wrapper for extending the existing D3D9 and DI8 implementation in NFS: Most Wanted (2005)
 
 ## How does it work?
-**This only hooks the D3D9 implementation *for now*.**
-
 It currently utilizes the [ASI Loader by ThirteenAG](https://github.com/ThirteenAG/Ultimate-ASI-Loader) to be injected to the game memory.
-After it is injected, it waits for NFS: Most Wanted (2005) to create its D3D9 device and then it hooks 4 of its functions:
+
+### D3D9
+After it is injected, it waits for NFS: Most Wanted (2005) to create its D3D9 device and then it hooks the following:
 - BeginScene
 - EndScene
 - Reset
@@ -42,6 +42,11 @@ void WINAPI MySuperEndSceneExtension(LPDIRECT3DDEVICE9 pDevice);
 // You can type ->
 void WINAPI MySuperEndSceneExtension(LPVOID pDevice);
 ```
+### DirectInput8
+Same as the D3D9 implementation explained above. After it is injected, it waits for NFS: Most Wanted (2005) to create its instance of DirectInput8, game controllers, and then it hooks the following:
+- GetDeviceState
+
+Currently, only mouse and keyboard events are supported. 
 
 ## Development dependencies
 - [June 2010 DirectX SDK](https://www.microsoft.com/en-us/download/details.aspx?id=6812)
