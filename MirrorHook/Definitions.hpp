@@ -1,9 +1,11 @@
 #pragma once
+#ifndef MIRRORHOOK_INCLUDED
+#define MIRRORHOOK_INCLUDED
 #include <WinDef.h>
 
 namespace MirrorHook {
    typedef bool(WINAPI* fnIsReady)();
-   bool WINAPI IsReady() {
+   inline bool WINAPI IsReady() {
       return reinterpret_cast<fnIsReady>(GetProcAddress(GetModuleHandle(L"MirrorHook.asi"), "IsReady"))();
    }
 
@@ -21,25 +23,52 @@ namespace MirrorHook {
       typedef HRESULT(WINAPI* fnAddD3D9Extender)(D3D9Extender extenderType, LPVOID extenderAddress);
       typedef HWND(WINAPI* fnGetWindowHandle)();
       typedef LPDIRECT3DDEVICE9(WINAPI* fnGetD3D9Device)();
-      typedef bool(WINAPI* fnIsReady)();
 
-      HRESULT WINAPI AddD3D9Extender(D3D9Extender extenderType, LPVOID extenderAddress) {
+      inline HRESULT WINAPI AddD3D9Extender(D3D9Extender extenderType, LPVOID extenderAddress) {
          return reinterpret_cast<fnAddD3D9Extender>(GetProcAddress(GetModuleHandle(L"MirrorHook.asi"), "D3D9Extenders::AddD3D9Extender"))
             (extenderType, extenderAddress);
       }
-      HWND WINAPI GetWindowHandle() {
+      inline HWND WINAPI GetWindowHandle() {
          return reinterpret_cast<fnGetWindowHandle>(GetProcAddress(GetModuleHandle(L"MirrorHook.asi"), "D3D9Extenders::GetWindowHandle"))();
       }
-      LPDIRECT3DDEVICE9 WINAPI GetD3D9Device() {
+      inline LPDIRECT3DDEVICE9 WINAPI GetD3D9Device() {
          return reinterpret_cast<fnGetD3D9Device>(GetProcAddress(GetModuleHandle(L"MirrorHook.asi"), "D3D9Extenders::GetD3D9Device"))();
       }
-      bool WINAPI IsReady() {
+      inline bool WINAPI IsReady() {
          return reinterpret_cast<fnIsReady>(GetProcAddress(GetModuleHandle(L"MirrorHook.asi"), "D3D9Extenders::IsReady"))();
       }
    }
+   namespace DirectInput8 {
+      enum class DirectInput8Device {
+         Keyboard,
+         Mouse
+      };
+      enum class DirectInput8Extender {
+         GetDeviceState
+      };
 
-#ifdef __DINPUT_INCLUDED__
+   #ifndef __DINPUT_INCLUDED__
+      typedef LPVOID LPDIRECTINPUT8A;
+      typedef LPVOID LPDIRECTINPUTDEVICE8A;
+   #endif
+      typedef HRESULT(WINAPI* fnAddDirectInput8Extender)(DirectInput8Device deviceType, DirectInput8Extender extenderType, LPVOID extenderAddress);
+      typedef LPDIRECTINPUT8A(WINAPI* fnGetDirectInput8AInstance)();
+      typedef LPDIRECTINPUTDEVICE8A(WINAPI* fnGetDirectInputDevice8A)(DirectInput8Device deviceType);
 
-#include <dinput.h>
-#endif
+      inline HRESULT WINAPI AddDirectInput8Extender(DirectInput8Device deviceType, DirectInput8Extender extenderType, LPVOID extenderAddress) {
+         return reinterpret_cast<fnAddDirectInput8Extender>(GetProcAddress(GetModuleHandle(L"MirrorHook.asi"), "DirectInput8Extenders::AddDirectInput8Extender"))
+            (deviceType, extenderType, extenderAddress);
+      }
+      inline LPDIRECTINPUT8A WINAPI GetDirectInput8AInstance() {
+         return reinterpret_cast<fnGetDirectInput8AInstance>(GetProcAddress(GetModuleHandle(L"MirrorHook.asi"), "DirectInput8Extenders::GetDirectInput8AInstance"))();
+      }
+      inline LPDIRECTINPUTDEVICE8A WINAPI GetDirectInputDevice8A(DirectInput8Device deviceType) {
+         return reinterpret_cast<fnGetDirectInputDevice8A>(GetProcAddress(GetModuleHandle(L"MirrorHook.asi"), "DirectInput8Extenders::GetDirectInputDevice8A"))
+            (deviceType);
+      }
+      inline bool WINAPI IsReady() {
+         return reinterpret_cast<fnIsReady>(GetProcAddress(GetModuleHandle(L"MirrorHook.asi"), "DirectInput8Extenders::IsReady"))();
+      }
+   }
 }
+#endif

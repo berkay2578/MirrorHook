@@ -153,6 +153,7 @@
   <ItemGroup>
     <ClInclude Include="D3D9Types.h" />
     <ClInclude Include="Definitions.hpp" />
+    <ClInclude Include="DI8Types.h" />
     <ClInclude Include="Memory.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />

@@ -16,6 +16,9 @@
     <Filter Include="Helpers\Internal\D3D9">
       <UniqueIdentifier>{eba6b47c-4180-49d6-aa16-eff8406c39de}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Helpers\Internal\DI8">
+      <UniqueIdentifier>{6b768c67-320c-4b6e-a301-aab2be67f11a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -35,6 +38,9 @@
     </ClInclude>
     <ClInclude Include="Definitions.hpp">
       <Filter>Helpers\External</Filter>
+    </ClInclude>
+    <ClInclude Include="DI8Types.h">
+      <Filter>Helpers\Internal\DI8</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
