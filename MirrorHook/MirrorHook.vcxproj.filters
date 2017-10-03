@@ -19,6 +19,9 @@
     <Filter Include="Helpers\Internal\DI8">
       <UniqueIdentifier>{6b768c67-320c-4b6e-a301-aab2be67f11a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Helpers\Internal\D3D9\ImGui">
+      <UniqueIdentifier>{e03726cf-d118-4477-b8f7-ae166a801b96}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -36,11 +39,20 @@
     <ClInclude Include="Memory.h">
       <Filter>Helpers\Internal</Filter>
     </ClInclude>
-    <ClInclude Include="Definitions.hpp">
-      <Filter>Helpers\External</Filter>
-    </ClInclude>
     <ClInclude Include="DI8Types.h">
       <Filter>Helpers\Internal\DI8</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\Definitions.hpp">
+      <Filter>Helpers\External</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\imgui\dx9\imgui_impl_dx9.h">
+      <Filter>Helpers\Internal\D3D9\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\imgui\imgui.h">
+      <Filter>Helpers\Internal\D3D9\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\imgui\imgui_internal.h">
+      <Filter>Helpers\Internal\D3D9\ImGui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -50,6 +62,18 @@
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Memory.cpp">
       <Filter>Helpers\Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="inc\imgui\imgui.cpp">
+      <Filter>Helpers\Internal\D3D9\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="inc\imgui\dx9\imgui_impl_dx9.cpp">
+      <Filter>Helpers\Internal\D3D9\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="inc\imgui\imgui_demo.cpp">
+      <Filter>Helpers\Internal\D3D9\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="inc\imgui\imgui_draw.cpp">
+      <Filter>Helpers\Internal\D3D9\ImGui</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
