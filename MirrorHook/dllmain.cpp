@@ -247,14 +247,15 @@ namespace D3D9Extenders {
 
                ImGui::End();
                ImGui::Render();
+
                frameCount++;
-            }
-            else {
-               if (isImGuiReady) {
-                  ImGui_ImplDX9_Shutdown();
-                  isImGuiReady = false;
+               if (frameCount >= 1000) {
+                  if (isImGuiReady) {
+                     ImGui_ImplDX9_Shutdown();
+                     isImGuiReady = false;
+                  }
+                  useImGui = false;
                }
-               useImGui = false;
             }
          }
       }
