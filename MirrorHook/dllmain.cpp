@@ -10,9 +10,9 @@
 #include "DI8Types.h"
 
 #include "Definitions.hpp"
-using MirrorHook::D3D9::D3D9Extender;
-using MirrorHook::DirectInput8::DirectInput8Device;
-using MirrorHook::DirectInput8::DirectInput8Extender;
+using MirrorHook::D3D9::D3D9Extension;
+using MirrorHook::DI8::DI8Device;
+using MirrorHook::DI8::DI8Extension;
 
 #include "VTableHook.hpp"
 #include <memory>
@@ -25,12 +25,12 @@ using std::map;
 #include <vector>
 using std::vector;
 
-namespace DirectInput8Extenders {
+namespace DI8Extender {
    LPDIRECTINPUT8A          di8Instance                       = nullptr;
    LPDIRECTINPUTDEVICE8A    device_Keyboard                   = nullptr;
    LPDIRECTINPUTDEVICE8A    device_Mouse                      = nullptr;
 
-   map<DirectInput8Device, vector<GetDeviceState_t>> mGetDeviceStateExtenders;
+   map<DI8Device, vector<GetDeviceState_t>> mGetDeviceStateExtensions;
 
    bool                     isExtenderReady                   = false;
 
@@ -41,10 +41,10 @@ namespace DirectInput8Extenders {
    HRESULT WINAPI hkGetDeviceState_Keyboard(HINSTANCE hInstance, DWORD cbData, LPVOID lpvData) {
       HRESULT retOrigGetDeviceState = origGetDeviceState_Keyboard(hInstance, cbData, lpvData);
 
-      if (!mGetDeviceStateExtenders[DirectInput8Device::Keyboard].empty()) {
-         for (GetDeviceState_t keyboardExtender : mGetDeviceStateExtenders[DirectInput8Device::Keyboard]) {
-            if (keyboardExtender)
-               keyboardExtender(hInstance, cbData, lpvData);
+      if (!mGetDeviceStateExtensions[DI8Device::Keyboard].empty()) {
+         for (GetDeviceState_t keyboardExtension : mGetDeviceStateExtensions[DI8Device::Keyboard]) {
+            if (keyboardExtension)
+               keyboardExtension(hInstance, cbData, lpvData);
          }
       }
       return retOrigGetDeviceState;
@@ -52,10 +52,10 @@ namespace DirectInput8Extenders {
    HRESULT WINAPI hkGetDeviceState_Mouse(HINSTANCE hInstance, DWORD cbData, LPVOID lpvData) {
       HRESULT retOrigGetDeviceState = origGetDeviceState_Mouse(hInstance, cbData, lpvData);
 
-      if (!mGetDeviceStateExtenders[DirectInput8Device::Mouse].empty()) {
-         for (GetDeviceState_t mouseExtender : mGetDeviceStateExtenders[DirectInput8Device::Mouse]) {
-            if (mouseExtender)
-               mouseExtender(hInstance, cbData, lpvData);
+      if (!mGetDeviceStateExtensions[DI8Device::Mouse].empty()) {
+         for (GetDeviceState_t mouseExtension : mGetDeviceStateExtensions[DI8Device::Mouse]) {
+            if (mouseExtension)
+               mouseExtension(hInstance, cbData, lpvData);
          }
       }
       return retOrigGetDeviceState;
@@ -63,49 +63,48 @@ namespace DirectInput8Extenders {
 #pragma endregion
 
 #pragma region exported helpers
-   HRESULT WINAPI AddDirectInput8Extender(DirectInput8Device deviceType, DirectInput8Extender extenderType, LPVOID extenderAddress) {
+   HRESULT WINAPI AddExtension(DI8Device deviceType, DI8Extension extensionType, LPVOID extensionAddress) {
    #pragma ExportedFunction
       if (!isExtenderReady)
          return FALSE;
 
-      switch (extenderType) {
-         case DirectInput8Extender::GetDeviceState:
-         {
-            switch (deviceType) {
-               case DirectInput8Device::Keyboard:
-               case DirectInput8Device::Mouse:
-                  mGetDeviceStateExtenders[deviceType].push_back(reinterpret_cast<GetDeviceState_t>(extenderAddress));
-                  break;
-               default:
-                  return FALSE;
+      switch (extensionType) {
+         case DI8Extension::GetDeviceState:
+            {
+               switch (deviceType) {
+                  case DI8Device::Keyboard:
+                  case DI8Device::Mouse:
+                     mGetDeviceStateExtensions[deviceType].push_back(reinterpret_cast<GetDeviceState_t>(extensionAddress));
+                     break;
+                  default:
+                     return FALSE;
+               }
+               break;
             }
-            break;
-         }
          default:
             return FALSE;
       }
       return TRUE;
    }
-   LPDIRECTINPUT8A WINAPI GetDirectInput8AInstance() {
+   LPDIRECTINPUT8A WINAPI GetDirectInput8A() {
    #pragma ExportedFunction
       if (!isExtenderReady)
          return nullptr;
 
       return di8Instance;
    }
-   LPDIRECTINPUTDEVICE8A WINAPI GetDirectInputDevice8A(DirectInput8Device deviceType) {
+   LPDIRECTINPUTDEVICE8A WINAPI GetDirectInputDevice8A(DI8Device deviceType) {
    #pragma ExportedFunction
       if (!isExtenderReady)
          return nullptr;
 
       switch (deviceType) {
-         case DirectInput8Device::Keyboard:
+         case DI8Device::Keyboard:
             return device_Keyboard;
-         case DirectInput8Device::Mouse:
+         case DI8Device::Mouse:
             return device_Mouse;
-         default:
-            return nullptr;
       }
+      return nullptr;
    }
    bool WINAPI IsReady() {
    #pragma ExportedFunction
@@ -148,8 +147,8 @@ namespace DirectInput8Extenders {
       return DIENUM_CONTINUE;
    }
    void Init() {
-      mGetDeviceStateExtenders[DirectInput8Device::Keyboard] = vector<GetDeviceState_t>();
-      mGetDeviceStateExtenders[DirectInput8Device::Mouse]    = vector<GetDeviceState_t>();
+      mGetDeviceStateExtensions[DI8Device::Keyboard] = vector<GetDeviceState_t>();
+      mGetDeviceStateExtensions[DI8Device::Mouse]    = vector<GetDeviceState_t>();
 
       DWORD dinput8Address = NULL;
       while (!dinput8Address) {
@@ -160,33 +159,46 @@ namespace DirectInput8Extenders {
       di8Instance->EnumDevices(DI8DEVCLASS_ALL, &enumCallback, NULL, DIEDFL_ATTACHEDONLY);
    }
 }
-namespace D3D9Extenders {
+namespace D3D9Extender {
    LPDIRECT3DDEVICE9      d3dDevice             = nullptr;
    HWND                   d3dWindow             = nullptr;
 
-   vector<Reset_t>        vBeforeResetExtenders = vector<Reset_t>();
-   vector<Reset_t>        vAfterResetExtenders  = vector<Reset_t>();
-   vector<BeginScene_t>   vBeginSceneExtenders  = vector<BeginScene_t>();
-   vector<EndScene_t>     vEndSceneExtenders    = vector<EndScene_t>();
+   TestCooperativeLevel_t testCooperativeLevelExtension = nullptr;
+   vector<BeginScene_t>   vBeginSceneExtensions         = vector<BeginScene_t>();
+   vector<EndScene_t>     vEndSceneExtensions           = vector<EndScene_t>();
+   vector<Reset_t>        vBeforeResetExtensions        = vector<Reset_t>();
+   vector<Reset_t>        vAfterResetExtensions         = vector<Reset_t>();
 
-   bool                   useImGui              = true;
-   bool                   isImGuiReady          = false;
+   bool                   useImGui                  = true;
+   bool                   isImGuiReady              = false;
+   unsigned int           infoOverlayFrame          = 0;
+   unsigned int           infoOverlayFrame_MaxFrame = 300;
 
    bool                   isExtenderReady       = false;
 
 #pragma region function hooks
-   unique_ptr<VTableHook> d3dDeviceHook         = nullptr;
-   Reset_t                origReset             = nullptr;
-   BeginScene_t           origBeginScene        = nullptr;
-   EndScene_t             origEndScene          = nullptr;
-   BeginStateBlock_t      origBeginStateBlock   = nullptr;
+   unique_ptr<VTableHook> d3dDeviceHook            = nullptr;
+   TestCooperativeLevel_t origTestCooperativeLevel = nullptr;
+   BeginScene_t           origBeginScene           = nullptr;
+   EndScene_t             origEndScene             = nullptr;
+   Reset_t                origReset                = nullptr;
+   BeginStateBlock_t      origBeginStateBlock      = nullptr;
 
+   HRESULT WINAPI hkTestCooperativeLevel(LPDIRECT3DDEVICE9 pDevice) {
+      HRESULT hr = origTestCooperativeLevel(pDevice);
+      if (testCooperativeLevelExtension) {
+         if (HRESULT exRet = testCooperativeLevelExtension(pDevice)) {
+            return exRet;
+         }
+      }
+      return hr;
+   }
    HRESULT WINAPI hkBeginScene(LPDIRECT3DDEVICE9 pDevice) {
       if (pDevice->TestCooperativeLevel() == D3D_OK) {
-         if (!vBeginSceneExtenders.empty()) {
-            for (BeginScene_t beginSceneExtender : vBeginSceneExtenders) {
-               if (beginSceneExtender)
-                  beginSceneExtender(pDevice);
+         if (!vBeginSceneExtensions.empty()) {
+            for (BeginScene_t beginSceneExtension : vBeginSceneExtensions) {
+               if (beginSceneExtension)
+                  beginSceneExtension(pDevice);
             }
          }
 
@@ -205,51 +217,50 @@ namespace D3D9Extenders {
    }
    HRESULT WINAPI hkEndScene(LPDIRECT3DDEVICE9 pDevice) {
       if (pDevice->TestCooperativeLevel() == D3D_OK) {
-         if (!vEndSceneExtenders.empty()) {
-            for (EndScene_t endSceneExtender : vEndSceneExtenders) {
-               if (endSceneExtender)
-                  endSceneExtender(pDevice);
+         if (!vEndSceneExtensions.empty()) {
+            for (EndScene_t endSceneExtension : vEndSceneExtensions) {
+               if (endSceneExtension)
+                  endSceneExtension(pDevice);
             }
          }
-
          if (useImGui && isImGuiReady) {
-            static UINT frameCount = 0;
-
-            if (frameCount < 1000) {
+            if (infoOverlayFrame < infoOverlayFrame_MaxFrame) {
                ImGui::SetNextWindowPos(ImVec2(10.0f, 40.0f), ImGuiCond_Once);
                ImGui::Begin("##MirrorHook", (bool*)0,
                             ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_AlwaysAutoResize);
 
-               ImGui::Text("MirrorHook v1.0");
+               ImGui::Text("MirrorHook v1.1");
                ImGui::Text("https://github.com/berkay2578/MirrorHook");
                ImGui::Text("by berkay(2578)");
                ImGui::Separator();
 
-               ImGui::Text("DirectInput8 Extender: %s", DirectInput8Extenders::isExtenderReady ? "Ready" : "Not ready");
+               ImGui::Text("D3D9 Extender         : %s", D3D9Extender::isExtenderReady ? "Ready" : "Not ready");
+               ImGui::Text("DirectInput8 Extender : %s", DI8Extender::isExtenderReady ? "Ready" : "Not ready");
                ImGui::Separator();
-               ImGui::Text("D3D9 Extender Information:");
+
+               ImGui::Text("D3D9 Extender Information");
                ImGui::Indent(5.0f);
-               ImGui::Text("BeginScene/EndScene extenders:    %d/%d", vBeginSceneExtenders.size(), vEndSceneExtenders.size());
-               ImGui::Text("BeforeReset/AfterReset extenders: %d/%d", vBeforeResetExtenders.size(), vAfterResetExtenders.size());
+               ImGui::Text("BeginScene/EndScene extensions    : %d/%d", vBeginSceneExtensions.size(), vEndSceneExtensions.size());
+               ImGui::Text("BeforeReset/AfterReset extensions : %d/%d", vBeforeResetExtensions.size(), vAfterResetExtensions.size());
                ImGui::Unindent(5.0f);
                ImGui::Separator();
 
-               ImGui::Text("DirectInput8 Extender Information:");
+               ImGui::Text("DirectInput8 Extender Information");
                ImGui::Indent(5.0f);
                ImGui::Text("Keyboard/Mouse");
-               ImGui::Text("GetDeviceState extenders:         %d/%d",
-                           DirectInput8Extenders::mGetDeviceStateExtenders[DirectInput8Device::Keyboard].size(),
-                           DirectInput8Extenders::mGetDeviceStateExtenders[DirectInput8Device::Mouse].size());
+               ImGui::Text("GetDeviceState extensions         : %d/%d",
+                           DI8Extender::mGetDeviceStateExtensions[DI8Device::Keyboard].size(),
+                           DI8Extender::mGetDeviceStateExtensions[DI8Device::Mouse].size());
                ImGui::Unindent(5.0f);
                ImGui::Separator();
 
-               ImGui::Text("I will disappear in... %04u.", 1000 - frameCount);
+               ImGui::Text("I will disappear in... %04u.", infoOverlayFrame_MaxFrame - infoOverlayFrame);
 
                ImGui::End();
                ImGui::Render();
 
-               frameCount++;
-               if (frameCount >= 1000) {
+               infoOverlayFrame++;
+               if (infoOverlayFrame >= infoOverlayFrame_MaxFrame) {
                   if (isImGuiReady) {
                      ImGui_ImplDX9_Shutdown();
                      isImGuiReady = false;
@@ -262,10 +273,10 @@ namespace D3D9Extenders {
       return origEndScene(pDevice);
    }
    HRESULT WINAPI hkReset(LPDIRECT3DDEVICE9 pDevice, D3DPRESENT_PARAMETERS* pPresentationParameters) {
-      if (!vBeforeResetExtenders.empty()) {
-         for (Reset_t beforeResetExtender : vBeforeResetExtenders) {
-            if (beforeResetExtender)
-               beforeResetExtender(pDevice, pPresentationParameters);
+      if (!vBeforeResetExtensions.empty()) {
+         for (Reset_t beforeResetExtension : vBeforeResetExtensions) {
+            if (beforeResetExtension)
+               beforeResetExtension(pDevice, pPresentationParameters);
          }
       }
 
@@ -274,10 +285,10 @@ namespace D3D9Extenders {
 
       auto retOrigReset = origReset(pDevice, pPresentationParameters);
 
-      if (!vAfterResetExtenders.empty()) {
-         for (Reset_t afterResetExtender : vAfterResetExtenders) {
-            if (afterResetExtender)
-               afterResetExtender(pDevice, pPresentationParameters);
+      if (!vAfterResetExtensions.empty()) {
+         for (Reset_t afterResetExtension : vAfterResetExtensions) {
+            if (afterResetExtension)
+               afterResetExtension(pDevice, pPresentationParameters);
          }
       }
 
@@ -296,33 +307,39 @@ namespace D3D9Extenders {
 
       auto retBeginStateBlock = origBeginStateBlock(pDevice);
 
-      origReset           = d3dDeviceHook->Hook(16, hkReset);
-      origBeginScene      = d3dDeviceHook->Hook(41, hkBeginScene);
-      origEndScene        = d3dDeviceHook->Hook(42, hkEndScene);
-      origBeginStateBlock = d3dDeviceHook->Hook(60, hkBeginStateBlock);
+      origTestCooperativeLevel = d3dDeviceHook->Hook(3, hkTestCooperativeLevel);
+      origReset                = d3dDeviceHook->Hook(16, hkReset);
+      origBeginScene           = d3dDeviceHook->Hook(41, hkBeginScene);
+      origEndScene             = d3dDeviceHook->Hook(42, hkEndScene);
+      origBeginStateBlock      = d3dDeviceHook->Hook(60, hkBeginStateBlock);
       return retBeginStateBlock;
    }
 #pragma endregion
 
 #pragma region exported helpers
-   HRESULT WINAPI AddD3D9Extender(D3D9Extender extenderType, LPVOID extenderAddress) {
+   HRESULT WINAPI AddExtension(D3D9Extension extensionType, LPVOID extensionAddress) {
    #pragma ExportedFunction
-      switch (extenderType) {
-         case D3D9Extender::BeforeReset:
-            vBeforeResetExtenders.push_back(reinterpret_cast<Reset_t>(extenderAddress));
+      switch (extensionType) {
+         case D3D9Extension::BeginScene:
+            vBeginSceneExtensions.push_back(reinterpret_cast<BeginScene_t>(extensionAddress));
             break;
-         case D3D9Extender::AfterReset:
-            vAfterResetExtenders.push_back(reinterpret_cast<Reset_t>(extenderAddress));
+         case D3D9Extension::EndScene:
+            vEndSceneExtensions.push_back(reinterpret_cast<EndScene_t>(extensionAddress));
             break;
-         case D3D9Extender::BeginScene:
-            vBeginSceneExtenders.push_back(reinterpret_cast<BeginScene_t>(extenderAddress));
+         case D3D9Extension::BeforeReset:
+            vBeforeResetExtensions.push_back(reinterpret_cast<Reset_t>(extensionAddress));
             break;
-         case D3D9Extender::EndScene:
-            vEndSceneExtenders.push_back(reinterpret_cast<EndScene_t>(extenderAddress));
+         case D3D9Extension::AfterReset:
+            vAfterResetExtensions.push_back(reinterpret_cast<Reset_t>(extensionAddress));
             break;
          default:
             return FALSE;
       }
+      return TRUE;
+   }
+   HRESULT WINAPI SetTestCooperativeLevelExtension(LPVOID extensionAddress) {
+   #pragma ExportedFunction
+      testCooperativeLevelExtension = reinterpret_cast<TestCooperativeLevel_t>(extensionAddress);
       return TRUE;
    }
    LPDIRECT3DDEVICE9 WINAPI GetD3D9Device() {
@@ -355,13 +372,14 @@ namespace D3D9Extenders {
 
       D3DDEVICE_CREATION_PARAMETERS cParams;
       d3dDevice->GetCreationParameters(&cParams);
-      d3dWindow =  cParams.hFocusWindow;
+      d3dWindow = cParams.hFocusWindow;
 
-      d3dDeviceHook       = make_unique<VTableHook>((PDWORD*)d3dDevice);
-      origReset           = d3dDeviceHook->Hook(16, hkReset);
-      origBeginScene      = d3dDeviceHook->Hook(41, hkBeginScene);
-      origEndScene        = d3dDeviceHook->Hook(42, hkEndScene);
-      origBeginStateBlock = d3dDeviceHook->Hook(60, hkBeginStateBlock);
+      d3dDeviceHook            = make_unique<VTableHook>((PDWORD*)d3dDevice);
+      origTestCooperativeLevel = d3dDeviceHook->Hook(3, hkTestCooperativeLevel);
+      origReset                = d3dDeviceHook->Hook(16, hkReset);
+      origBeginScene           = d3dDeviceHook->Hook(41, hkBeginScene);
+      origEndScene             = d3dDeviceHook->Hook(42, hkEndScene);
+      origBeginStateBlock      = d3dDeviceHook->Hook(60, hkBeginStateBlock);
 
       isExtenderReady = true;
    }
@@ -369,15 +387,21 @@ namespace D3D9Extenders {
 
 bool isInit = false;
 
+#pragma region exported helpers
 bool WINAPI IsReady() {
 #pragma ExportedFunction
    return isInit;
 }
+bool WINAPI IsShowingInfoOverlay() {
+#pragma ExportedFunction
+   return D3D9Extender::infoOverlayFrame < D3D9Extender::infoOverlayFrame_MaxFrame;
+}
+#pragma endregion
 
 DWORD WINAPI Init(LPVOID) {
    Memory::Init();
-   D3D9Extenders::Init();
-   DirectInput8Extenders::Init();
+   D3D9Extender::Init();
+   DI8Extender::Init();
 
    isInit = true;
    return TRUE;
