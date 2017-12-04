@@ -2,16 +2,17 @@
 A wrapper for extending the existing D3D9 and DI8 implementation in NFS: Most Wanted (2005)
 
 ## How does it work?
-It currently utilizes the [ASI Loader by ThirteenAG](https://github.com/ThirteenAG/Ultimate-ASI-Loader) to be injected to the game memory.
+It is recommended to use the [ASI Loader by ThirteenAG](https://github.com/ThirteenAG/Ultimate-ASI-Loader) to inject this into the game memory.
 
 ### D3D9
-After it is injected, it waits for NFS: Most Wanted (2005) to create its D3D9 device and then it hooks the following:
+After it is injected, it waits for NFS: Most Wanted (2005) to create its D3D9 device and then it hooks the following function(s):
 - BeginScene
 - EndScene
 - Reset
+- TestCooperativeLevel
 - BeginStateBlock
 
-After hooking the functions, it lets external applications add their own extender functions.
+After hooking the functions, it lets external applications add their own extension functions.
 ```
 // Example:
 #include "\path\to\MirrorHook\Definitions.hpp"
@@ -31,10 +32,10 @@ void MyAwesomeInitFunction() {
          Sleep(100);
       }
       
-      MirrorHook::D3D9::AddD3D9Extender(MirrorHook::D3D9::D3D9Extender::EndScene, &MySuperEndSceneExtension);
+      MirrorHook::D3D9::AddExtension(MirrorHook::D3D9::D3D9Extension::EndScene, &MySuperEndSceneExtension);
 }
 ```
-Moreover, the actual DirectX libraries are **not needed** to write extensions (as long as you don't actually need them).
+The actual DirectX libraries are **not needed** to write extensions, `void*` can be used for the parameters instead.
 ```
 // Example:
 // Instead of ->
@@ -43,7 +44,7 @@ void WINAPI MySuperEndSceneExtension(LPDIRECT3DDEVICE9 pDevice);
 void WINAPI MySuperEndSceneExtension(LPVOID pDevice);
 ```
 ### DirectInput8
-Same as the D3D9 implementation explained above. After it is injected, it waits for NFS: Most Wanted (2005) to create its instance of DirectInput8, game controllers, and then it hooks the following:
+Same as the D3D9 implementation explained above. After it is injected, it waits for NFS: Most Wanted (2005) to create its instance of DirectInput8, game controllers, and then it hooks the following function(s):
 - GetDeviceState
 
 Currently, only mouse and keyboard events are supported. 
