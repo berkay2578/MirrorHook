@@ -25,8 +25,10 @@ void MyAwesomeInitFunction() {
          hMirrorHook = GetModuleHandle("MirrorHook.asi");
          Sleep(100);
       }
+      // Let MirrorHook know what game you're working on
+      MirrorHook::PrepareFor(MirrorHook::Game::*);
       
-      // Add some super extender
+      // Add some super extension
       MirrorHook::D3D9::AddExtension(MirrorHook::D3D9::D3D9Extension::EndScene, &MySuperEndSceneExtension);
       
       // Wait for the hook to finish, to get the window handle for example.
