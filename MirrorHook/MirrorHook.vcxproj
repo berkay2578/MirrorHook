@@ -132,7 +132,8 @@
       <AdditionalLibraryDirectories>$(DXSDK_DIR)Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(SolutionDir)Release\MirrorHook.asi" "D:\Oyunlar\NFS Most Wanted\scripts\MirrorHook.asi" /y</Command>
+      <Command>copy "$(SolutionDir)Release\MirrorHook.asi" "D:\Oyunlar\NFS Most Wanted\scripts\MirrorHook.asi" /y
+copy "$(SolutionDir)Release\MirrorHook.asi" "D:\Oyunlar\NFS Carbon Collectors Edition\scripts\MirrorHook.asi" /y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

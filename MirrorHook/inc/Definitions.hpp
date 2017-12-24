@@ -4,12 +4,22 @@
 #include <WinDef.h>
 
 namespace MirrorHook {
+   enum class Game {
+      MostWanted = 0,
+      Carbon
+   };
+
+   typedef void(WINAPI* fn_PrepareFor)(Game gameType);
    typedef bool(WINAPI* fn_NoParam_ReturnsBool)();
+
+   inline void WINAPI PrepareFor(Game gameType) {
+      reinterpret_cast<fn_PrepareFor>(GetProcAddress(GetModuleHandle(TEXT("MirrorHook.asi")), "MirrorHookInternals::PrepareFor"))(gameType);
+   }
    inline bool WINAPI IsReady() {
-      return reinterpret_cast<fn_NoParam_ReturnsBool>(GetProcAddress(GetModuleHandle(TEXT("MirrorHook.asi")), "IsReady"))();
+      return reinterpret_cast<fn_NoParam_ReturnsBool>(GetProcAddress(GetModuleHandle(TEXT("MirrorHook.asi")), "MirrorHookInternals::IsReady"))();
    }
    inline bool WINAPI IsShowingInfoOverlay() {
-      return reinterpret_cast<fn_NoParam_ReturnsBool>(GetProcAddress(GetModuleHandle(TEXT("MirrorHook.asi")), "IsShowingInfoOverlay"))();
+      return reinterpret_cast<fn_NoParam_ReturnsBool>(GetProcAddress(GetModuleHandle(TEXT("MirrorHook.asi")), "MirrorHookInternals::IsShowingInfoOverlay"))();
    }
 
    namespace D3D9 {
@@ -29,21 +39,21 @@ namespace MirrorHook {
       typedef LPDIRECT3DDEVICE9(WINAPI* fnGetD3D9Device)();
 
       inline HRESULT WINAPI AddExtension(D3D9Extension extensionType, LPVOID extensionAddress) {
-         return reinterpret_cast<fnAddExtension>(GetProcAddress(GetModuleHandle(TEXT("MirrorHook.asi")), "D3D9Extender::AddExtension"))
+         return reinterpret_cast<fnAddExtension>(GetProcAddress(GetModuleHandle(TEXT("MirrorHook.asi")), "MirrorHookInternals::D3D9Extender::AddExtension"))
             (extensionType, extensionAddress);
       }
       inline HRESULT WINAPI SetTestCooperativeLevelExtension(LPVOID extensionAddress) {
-         return reinterpret_cast<fnSetTestCooperativeLevelExtension>(GetProcAddress(GetModuleHandle(TEXT("MirrorHook.asi")), "D3D9Extender::SetTestCooperativeLevelExtension"))
+         return reinterpret_cast<fnSetTestCooperativeLevelExtension>(GetProcAddress(GetModuleHandle(TEXT("MirrorHook.asi")), "MirrorHookInternals::D3D9Extender::SetTestCooperativeLevelExtension"))
             (extensionAddress);
       }
       inline HWND WINAPI GetWindowHandle() {
-         return reinterpret_cast<fnGetWindowHandle>(GetProcAddress(GetModuleHandle(TEXT("MirrorHook.asi")), "D3D9Extender::GetWindowHandle"))();
+         return reinterpret_cast<fnGetWindowHandle>(GetProcAddress(GetModuleHandle(TEXT("MirrorHook.asi")), "MirrorHookInternals::D3D9Extender::GetWindowHandle"))();
       }
       inline LPDIRECT3DDEVICE9 WINAPI GetD3D9Device() {
-         return reinterpret_cast<fnGetD3D9Device>(GetProcAddress(GetModuleHandle(TEXT("MirrorHook.asi")), "D3D9Extender::GetD3D9Device"))();
+         return reinterpret_cast<fnGetD3D9Device>(GetProcAddress(GetModuleHandle(TEXT("MirrorHook.asi")), "MirrorHookInternals::D3D9Extender::GetD3D9Device"))();
       }
       inline bool WINAPI IsReady() {
-         return reinterpret_cast<fn_NoParam_ReturnsBool>(GetProcAddress(GetModuleHandle(TEXT("MirrorHook.asi")), "D3D9Extender::IsReady"))();
+         return reinterpret_cast<fn_NoParam_ReturnsBool>(GetProcAddress(GetModuleHandle(TEXT("MirrorHook.asi")), "MirrorHookInternals::D3D9Extender::IsReady"))();
       }
    }
    namespace DI8 {
@@ -64,18 +74,18 @@ namespace MirrorHook {
       typedef LPDIRECTINPUTDEVICE8A(WINAPI* fnGetDirectInputDevice8A)(DI8Device deviceType);
 
       inline HRESULT WINAPI AddExtension(DI8Device deviceType, DI8Extension extensionType, LPVOID extensionAddress) {
-         return reinterpret_cast<fnAddExtension>(GetProcAddress(GetModuleHandle(TEXT("MirrorHook.asi")), "DI8Extender::AddExtension"))
+         return reinterpret_cast<fnAddExtension>(GetProcAddress(GetModuleHandle(TEXT("MirrorHook.asi")), "MirrorHookInternals::DI8Extender::AddExtension"))
             (deviceType, extensionType, extensionAddress);
       }
       inline LPDIRECTINPUT8A WINAPI GetDirectInput8A() {
-         return reinterpret_cast<fnGetDirectInput8A>(GetProcAddress(GetModuleHandle(TEXT("MirrorHook.asi")), "DI8Extender::GetDirectInput8A"))();
+         return reinterpret_cast<fnGetDirectInput8A>(GetProcAddress(GetModuleHandle(TEXT("MirrorHook.asi")), "MirrorHookInternals::DI8Extender::GetDirectInput8A"))();
       }
       inline LPDIRECTINPUTDEVICE8A WINAPI GetDirectInputDevice8A(DI8Device deviceType) {
-         return reinterpret_cast<fnGetDirectInputDevice8A>(GetProcAddress(GetModuleHandle(TEXT("MirrorHook.asi")), "DI8Extender::GetDirectInputDevice8A"))
+         return reinterpret_cast<fnGetDirectInputDevice8A>(GetProcAddress(GetModuleHandle(TEXT("MirrorHook.asi")), "MirrorHookInternals::DI8Extender::GetDirectInputDevice8A"))
             (deviceType);
       }
       inline bool WINAPI IsReady() {
-         return reinterpret_cast<fn_NoParam_ReturnsBool>(GetProcAddress(GetModuleHandle(TEXT("MirrorHook.asi")), "DI8Extender::IsReady"))();
+         return reinterpret_cast<fn_NoParam_ReturnsBool>(GetProcAddress(GetModuleHandle(TEXT("MirrorHook.asi")), "MirrorHookInternals::DI8Extender::IsReady"))();
       }
    }
 }
