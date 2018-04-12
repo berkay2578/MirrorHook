@@ -9,11 +9,11 @@ namespace MirrorHook {
       Carbon
    };
 
-   typedef void(WINAPI* fn_PrepareFor)(Game gameType);
+   typedef bool(WINAPI* fn_PrepareFor)(Game gameType);
    typedef bool(WINAPI* fn_NoParam_ReturnsBool)();
 
-   inline void WINAPI PrepareFor(Game gameType) {
-      reinterpret_cast<fn_PrepareFor>(GetProcAddress(GetModuleHandle(TEXT("MirrorHook.asi")), "MirrorHookInternals::PrepareFor"))(gameType);
+   inline bool WINAPI PrepareFor(Game gameType) {
+      return reinterpret_cast<fn_PrepareFor>(GetProcAddress(GetModuleHandle(TEXT("MirrorHook.asi")), "MirrorHookInternals::PrepareFor"))(gameType);
    }
    inline bool WINAPI IsReady() {
       return reinterpret_cast<fn_NoParam_ReturnsBool>(GetProcAddress(GetModuleHandle(TEXT("MirrorHook.asi")), "MirrorHookInternals::IsReady"))();

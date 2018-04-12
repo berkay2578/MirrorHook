@@ -71,17 +71,17 @@ namespace MirrorHookInternals {
 
          switch (extensionType) {
             case DI8Extension::GetDeviceState:
-               {
-                  switch (deviceType) {
-                     case DI8Device::Keyboard:
-                     case DI8Device::Mouse:
-                        mGetDeviceStateExtensions[deviceType].push_back(reinterpret_cast<GetDeviceState_t>(extensionAddress));
-                        break;
-                     default:
-                        return FALSE;
-                  }
-                  break;
+            {
+               switch (deviceType) {
+                  case DI8Device::Keyboard:
+                  case DI8Device::Mouse:
+                     mGetDeviceStateExtensions[deviceType].push_back(reinterpret_cast<GetDeviceState_t>(extensionAddress));
+                     break;
+                  default:
+                     return FALSE;
                }
+               break;
+            }
             default:
                return FALSE;
          }
@@ -121,8 +121,7 @@ namespace MirrorHookInternals {
             if (deviceType == DI8DEVTYPE_KEYBOARD) {
                di8Instance->CreateDevice(lpddi->guidInstance, &device_Keyboard, NULL);
                inputTable = *(PDWORD*)device_Keyboard;
-            }
-            else {
+            } else {
                di8Instance->CreateDevice(lpddi->guidInstance, &device_Mouse, NULL);
                inputTable = *(PDWORD*)device_Mouse;
             }
@@ -132,8 +131,7 @@ namespace MirrorHookInternals {
             if (deviceType == DI8DEVTYPE_KEYBOARD) {
                origGetDeviceState_Keyboard = (GetDeviceState_t)(DWORD)inputTable[9];
                inputTable[9]               = (DWORD)hkGetDeviceState_Keyboard;
-            }
-            else {
+            } else {
                origGetDeviceState_Mouse    = (GetDeviceState_t)(DWORD)inputTable[9];
                inputTable[9]               = (DWORD)hkGetDeviceState_Mouse;
             }
@@ -177,7 +175,7 @@ namespace MirrorHookInternals {
       unsigned int           infoOverlayFrame          = 0;
       unsigned int           infoOverlayFrame_MaxFrame = 300;
 
-      bool                   isExtenderReady       = false;
+      bool                   isExtenderReady = false;
 
    #pragma region function hooks
       unique_ptr<VTableHook> d3dDeviceHook            = nullptr;
@@ -205,16 +203,20 @@ namespace MirrorHookInternals {
                }
             }
 
-            if (useImGui) {
-               if (!isImGuiReady) {
-                  ImGui_ImplDX9_Init(d3dWindow, d3dDevice);
-                  ImGuiIO& io = ImGui::GetIO();
-                  io.IniFilename = NULL;
-
-                  isImGuiReady = true;
-               }
-               ImGui_ImplDX9_NewFrame();
+            if (ImGui::IsKeyPressed(VK_F9, false)) {
+               infoOverlayFrame_MaxFrame = -1;
+               useImGui = !useImGui;
             }
+            ImGui::GetIO().KeysDown[VK_F9] = GetKeyState(VK_F9) & 0x8000;
+
+            if (!isImGuiReady) {
+               ImGui_ImplDX9_Init(d3dWindow, d3dDevice);
+               ImGuiIO& io = ImGui::GetIO();
+               io.IniFilename = NULL;
+
+               isImGuiReady = true;
+            }
+            ImGui_ImplDX9_NewFrame();
          }
          return origBeginScene(pDevice);
       }
@@ -227,49 +229,60 @@ namespace MirrorHookInternals {
                }
             }
             if (useImGui && isImGuiReady) {
-               if (infoOverlayFrame < infoOverlayFrame_MaxFrame) {
+               if (infoOverlayFrame_MaxFrame == -1
+                  || infoOverlayFrame < infoOverlayFrame_MaxFrame) {
                   ImGui::SetNextWindowPos(ImVec2(10.0f, 40.0f), ImGuiCond_Once);
-                  ImGui::Begin("##MirrorHook", (bool*)0,
-                               ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_AlwaysAutoResize);
+                  if (ImGui::Begin("##MirrorHook", nullptr,
+                     ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_AlwaysAutoResize)) {
 
-                  ImGui::Text("MirrorHook v1.1");
-                  ImGui::Text("https://github.com/berkay2578/MirrorHook");
-                  ImGui::Text("by berkay(2578)");
-                  ImGui::Separator();
+                     ImGui::Text("MirrorHook v1.1");
+                     ImGui::Text("https://github.com/berkay2578/MirrorHook");
+                     ImGui::Text("by berkay(2578)");
+                     ImGui::Separator();
 
-                  ImGui::Text("D3D9 Extender         : %s", D3D9Extender::isExtenderReady ? "Ready" : "Not ready");
-                  ImGui::Text("DirectInput8 Extender : %s", DI8Extender::isExtenderReady ? "Ready" : "Not ready");
-                  ImGui::Separator();
+                     ImGui::Text("D3D9 Extender         : %s", D3D9Extender::isExtenderReady ? "Ready" : "Not ready"); // redundant much?
+                     ImGui::Text("DirectInput8 Extender : %s", DI8Extender::isExtenderReady ? "Ready" : "Not ready");
+                     ImGui::Separator();
 
-                  ImGui::Text("D3D9 Extender Information");
-                  ImGui::Indent(5.0f);
-                  ImGui::Text("BeginScene/EndScene extensions    : %d/%d", vBeginSceneExtensions.size(), vEndSceneExtensions.size());
-                  ImGui::Text("BeforeReset/AfterReset extensions : %d/%d", vBeforeResetExtensions.size(), vAfterResetExtensions.size());
-                  ImGui::Unindent(5.0f);
-                  ImGui::Separator();
+                     ImGui::Text("D3D9 Extender Information");
+                     ImGui::Indent(5.0f);
+                     {
+                        ImGui::Text("BeginScene  | EndScene extensions   : %d | %d", vBeginSceneExtensions.size(), vEndSceneExtensions.size());
+                        ImGui::Text("BeforeReset | AfterReset extensions : %d | %d", vBeforeResetExtensions.size(), vAfterResetExtensions.size());
+                     }
+                     ImGui::Unindent(5.0f);
+                     ImGui::Separator();
 
-                  ImGui::Text("DirectInput8 Extender Information");
-                  ImGui::Indent(5.0f);
-                  ImGui::Text("Keyboard/Mouse");
-                  ImGui::Text("GetDeviceState extensions         : %d/%d",
+                     ImGui::Text("DirectInput8 Extender Information");
+                     ImGui::Indent(5.0f);
+                     {
+                        ImGui::Text("Keyboard | Mouse");
+                        ImGui::Indent(2.5f);
+                        {
+                           ImGui::Text("GetDeviceState extensions : %d | %d",
                               DI8Extender::mGetDeviceStateExtensions[DI8Device::Keyboard].size(),
                               DI8Extender::mGetDeviceStateExtensions[DI8Device::Mouse].size());
-                  ImGui::Unindent(5.0f);
-                  ImGui::Separator();
+                        }
+                        ImGui::Unindent(2.5f);
+                     }
+                     ImGui::Unindent(5.0f);
+                     ImGui::Separator();
+                     ImGui::Text("Press F9 to toggle me.");
 
-                  ImGui::Text("I will disappear in... %04u.", infoOverlayFrame_MaxFrame - infoOverlayFrame);
+                     if (infoOverlayFrame_MaxFrame != -1) {
+                        ImGui::Text("I will disappear in... %04u.", infoOverlayFrame_MaxFrame - infoOverlayFrame);
 
+                        infoOverlayFrame++;
+                        if (infoOverlayFrame >= infoOverlayFrame_MaxFrame) {
+                           ImGui::End();
+                           ImGui::Render();
+                           useImGui = false;
+                           return origEndScene(pDevice);
+                        }
+                     }
+                  }
                   ImGui::End();
                   ImGui::Render();
-
-                  infoOverlayFrame++;
-                  if (infoOverlayFrame >= infoOverlayFrame_MaxFrame) {
-                     if (isImGuiReady) {
-                        ImGui_ImplDX9_Shutdown();
-                        isImGuiReady = false;
-                     }
-                     useImGui = false;
-                  }
                }
             }
          }
@@ -283,7 +296,7 @@ namespace MirrorHookInternals {
             }
          }
 
-         if (useImGui && isImGuiReady)
+         if (isImGuiReady)
             ImGui_ImplDX9_InvalidateDeviceObjects();
 
          auto retOrigReset = origReset(pDevice, pPresentationParameters);
@@ -295,13 +308,8 @@ namespace MirrorHookInternals {
             }
          }
 
-         if (useImGui) {
-            if (!pDevice || pDevice->TestCooperativeLevel() != D3D_OK) {
-               ImGui_ImplDX9_Shutdown();
-               isImGuiReady = false;
-            }
+         if (isImGuiReady)
             ImGui_ImplDX9_CreateDeviceObjects();
-         }
 
          return retOrigReset;
       }
@@ -398,24 +406,27 @@ namespace MirrorHookInternals {
    }
 
 #pragma region exported helpers
-   void WINAPI PrepareFor(MirrorHook::Game gameType) {
+   bool WINAPI PrepareFor(MirrorHook::Game gameType) {
    #pragma ExportedFunction
-      Memory::Init();
-      switch (gameType) {
-         case MirrorHook::Game::MostWanted:
+      if (!isInit && !DI8Extender::isExtenderReady && !D3D9Extender::isExtenderReady) {
+         Memory::Init();
+         switch (gameType) {
+            case MirrorHook::Game::MostWanted:
             {
                DI8Extender::dinput8Address    = Memory::makeAbsolute(0x582D14);
                D3D9Extender::d3dDeviceAddress = Memory::makeAbsolute(0x582BDC);
             }
             break;
-         case MirrorHook::Game::Carbon:
+            case MirrorHook::Game::Carbon:
             {
                DI8Extender::dinput8Address    = Memory::makeAbsolute(0x71F5CC);
                D3D9Extender::d3dDeviceAddress = Memory::makeAbsolute(0x6B0ABC);
             }
             break;
-      }
-      CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)&Init, 0, 0, 0);
+         }
+         CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)&Init, 0, 0, 0);
+         return true;
+      } else return false;
    }
    bool WINAPI IsReady() {
    #pragma ExportedFunction
