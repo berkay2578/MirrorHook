@@ -428,6 +428,18 @@ namespace MirrorHookInternals {
          return true;
       } else return false;
    }
+   bool WINAPI PrepareForForce(const DWORD& dinput8Address, const DWORD& d3dDeviceAddress) {
+   #pragma ExportedFunction
+      if (!isInit && !DI8Extender::isExtenderReady && !D3D9Extender::isExtenderReady) {
+         Memory::Init();
+         
+         DI8Extender::dinput8Address    = Memory::makeAbsolute(dinput8Address);
+         D3D9Extender::d3dDeviceAddress = Memory::makeAbsolute(d3dDeviceAddress);
+         
+         CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)&Init, 0, 0, 0);
+         return true;
+      } else return false;
+   }
    bool WINAPI IsReady() {
    #pragma ExportedFunction
       return isInit;
