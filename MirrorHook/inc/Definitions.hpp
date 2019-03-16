@@ -15,7 +15,7 @@ namespace MirrorHook {
    inline bool WINAPI PrepareFor(Game gameType) {
       return reinterpret_cast<fn_PrepareFor>(GetProcAddress(GetModuleHandle(TEXT("MirrorHook.asi")), "MirrorHookInternals::PrepareFor"))(gameType);
    }
-   inline bool WINAPI PrepareForForce(const DWORD& dinput8Address, const DWORD& d3dDeviceAddress) {
+   inline bool WINAPI PrepareForce(const DWORD& dinput8Address, const DWORD& d3dDeviceAddress) {
       return reinterpret_cast<fn_PrepareForForce>(GetProcAddress(GetModuleHandle(TEXT("MirrorHook.asi")), "MirrorHookInternals::PrepareForForce"))(dinput8Address, d3dDeviceAddress);
    }
    inline bool WINAPI IsReady() {

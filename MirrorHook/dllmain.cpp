@@ -428,7 +428,7 @@ namespace MirrorHookInternals {
          return true;
       } else return false;
    }
-   bool WINAPI PrepareForForce(const DWORD& dinput8Address, const DWORD& d3dDeviceAddress) {
+   bool WINAPI PrepareForce(const DWORD& dinput8Address, const DWORD& d3dDeviceAddress) {
    #pragma ExportedFunction
       if (!isInit && !DI8Extender::isExtenderReady && !D3D9Extender::isExtenderReady) {
          Memory::Init();
